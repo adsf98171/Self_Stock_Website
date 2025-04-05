@@ -32,6 +32,6 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add output/
+        git add docs/
         git commit -m "Update stock data and predictions" || echo "No changes to commit"
         git push

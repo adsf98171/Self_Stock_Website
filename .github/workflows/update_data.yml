@@ -8,9 +8,10 @@ on:
 jobs:
   update-data:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3  # 這裡使用 v3 並設置 persist-credentials
+      with:
+        persist-credentials: true  # 這行確保有推送權限
     
     - name: Set up Python
       uses: actions/setup-python@v2

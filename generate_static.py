@@ -14,13 +14,27 @@ logging.getLogger('cmdstanpy').setLevel(logging.WARNING)
 logging.getLogger('prophet').setLevel(logging.WARNING)
 logging.getLogger('fbprophet').setLevel(logging.WARNING)
 
-# 創建輸出目錄
-os.makedirs('output', exist_ok=True)
-
-def save_plotly_fig(fig, filename):
-    """保存 Plotly 圖表為 HTML 文件"""
-    html = fig.to_html(full_html=False, include_plotlyjs='cdn')
-    with open(f'{filename}', 'w', encoding='utf-8') as f:
+def save_complete_html(fig, filename, title):
+    """生成完整HTML文件（包含Plotly配置）"""
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{title}</title>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <style>
+            body {{ margin: 20px; }}
+            .plot-container {{ width: 100%; height: 100%; }}
+        </style>
+    </head>
+    <body>
+        <div class="plot-container">
+            {fig.to_html(full_html=False, include_plotlyjs='cdn')}
+        </div>
+    </body>
+    </html>
+    """
+    with open(filename, 'w', encoding='utf-8') as f:
         f.write(html)
 
 def create_interactive_plot(ticker_symbol, period):
@@ -156,63 +170,56 @@ def generate_static_files():
     
     # 基本資訊
     info = tsmc.info
-    current_price = info.get('currentPrice', 'N/A')
-    day_high = info.get('dayHigh', 'N/A')
-    day_low = info.get('dayLow', 'N/A')
-    previous_close = info.get('previousClose', 'N/A')
-    
-    # 生成圖表
-    plot_1day = create_interactive_plot(ticker, "1d")
-    plot_1week = create_interactive_plot(ticker, "5d")
-    plot_2weeks = create_interactive_plot(ticker, "10d")
-    plot_1month = create_interactive_plot(ticker, "1mo")
-    prophet_forecast = create_prophet_forecast(ticker, periods=30)
-    
-    # 保存圖表
-    if plot_1day: save_plotly_fig(plot_1day, "plot_1day.html")
-    if plot_1week: save_plotly_fig(plot_1week, "plot_1week.html")
-    if plot_2weeks: save_plotly_fig(plot_2weeks, "plot_2weeks.html")
-    if plot_1month: save_plotly_fig(plot_1month, "plot_1month.html")
-    if prophet_forecast: save_plotly_fig(prophet_forecast, "prophet_forecast.html")
-    
-    # 歷史數據
-    history_data = tsmc.history(period="5d")
-    history_list = []
-    for date, row in history_data.iterrows():
-        history_list.append({
-            'date': date.strftime('%Y-%m-%d'),
-            'open': round(row['Open'], 2),
-            'high': round(row['High'], 2),
-            'low': round(row['Low'], 2),
-            'close': round(row['Close'], 2),
-            'volume': int(row['Volume'])
-        })
-    
-    # 新聞數據
-    news = []
-    try:
-        news_items = tsmc.news[:5]
-        for item in news_items:
-            news.append({
-                'link': item.get('link', '#'),
-                'title': item.get('title', '無標題'),
-                'publisher': item.get('publisher', '未知來源'),
-                'publishedAt': item.get('providerPublishTime', datetime.datetime.now().timestamp())
-            })
-    except Exception as e:
-        print(f"Error processing news: {str(e)}")
-    
-    # 保存數據為JSON
     data = {
-        'current_price': current_price,
-        'day_high': day_high,
-        'day_low': day_low,
-        'previous_close': previous_close,
-        'history': history_list,
-        'news': news,
+        'current_price': info.get('currentPrice', 'N/A'),
+        'day_high': info.get('dayHigh', 'N/A'),
+        'day_low': info.get('dayLow', 'N/A'),
+        'previous_close': info.get('previousClose', 'N/A'),
         'last_updated': datetime.datetime.now().isoformat()
     }
     
+    # 生成並保存圖表
+    periods = {
+        '1d': '今日股價',
+        '5d': '近5日股價', 
+        '10d': '近10日股價',
+        '1mo': '近1月股價'
+    }
+    
+    for period, name in periods.items():
+        fig = create_interactive_plot(ticker, period)
+        if fig:
+            save_complete_html(fig, f"plot_{period}.html", f"台積電({ticker}) {name}走勢")
+    
+    # 保存Prophet預測
+    prophet_fig = create_prophet_forecast(ticker)
+    if prophet_fig:
+        save_complete_html(prophet_fig, "prophet_forecast.html", "台積電(2330.TW) 未來30天股價預測")
+    
+    # 保存歷史數據
+    history_data = tsmc.history(period="5d")
+    data['history'] = [{
+        'date': date.strftime('%Y-%m-%d'),
+        'open': round(row['Open'], 2),
+        'high': round(row['High'], 2),
+        'low': round(row['Low'], 2),
+        'close': round(row['Close'], 2),
+        'volume': int(row['Volume'])
+    } for date, row in history_data.iterrows()]
+    
+    # 保存新聞數據
+    try:
+        data['news'] = [{
+            'link': item.get('link', '#'),
+            'title': item.get('title', '無標題'),
+            'publisher': item.get('publisher', '未知來源'),
+            'publishedAt': item.get('providerPublishTime', datetime.datetime.now().timestamp())
+        } for item in tsmc.news[:5]]
+    except Exception as e:
+        print(f"Error processing news: {str(e)}")
+        data['news'] = []
+    
+    # 保存數據
     with open('data.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 

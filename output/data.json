@@ -1,1 +1,81 @@
-
+{
+  "current_price": 942.0,
+  "day_high": 952.0,
+  "day_low": 938.0,
+  "previous_close": 944.0,
+  "history": [
+    {
+      "date": "2025-03-27",
+      "open": 961.0,
+      "high": 964.0,
+      "low": 958.0,
+      "close": 958.0,
+      "volume": 34563256
+    },
+    {
+      "date": "2025-03-28",
+      "open": 946.0,
+      "high": 955.0,
+      "low": 946.0,
+      "close": 952.0,
+      "volume": 33101234
+    },
+    {
+      "date": "2025-03-31",
+      "open": 920.0,
+      "high": 924.0,
+      "low": 910.0,
+      "close": 910.0,
+      "volume": 51064611
+    },
+    {
+      "date": "2025-04-01",
+      "open": 929.0,
+      "high": 946.0,
+      "low": 925.0,
+      "close": 944.0,
+      "volume": 32197752
+    },
+    {
+      "date": "2025-04-02",
+      "open": 949.0,
+      "high": 952.0,
+      "low": 938.0,
+      "close": 942.0,
+      "volume": 24849656
+    }
+  ],
+  "news": [
+    {
+      "link": "#",
+      "title": "無標題",
+      "publisher": "未知來源",
+      "publishedAt": 1743865445.954525
+    },
+    {
+      "link": "#",
+      "title": "無標題",
+      "publisher": "未知來源",
+      "publishedAt": 1743865445.954531
+    },
+    {
+      "link": "#",
+      "title": "無標題",
+      "publisher": "未知來源",
+      "publishedAt": 1743865445.954532
+    },
+    {
+      "link": "#",
+      "title": "無標題",
+      "publisher": "未知來源",
+      "publishedAt": 1743865445.954532
+    },
+    {
+      "link": "#",
+      "title": "無標題",
+      "publisher": "未知來源",
+      "publishedAt": 1743865445.954533
+    }
+  ],
+  "last_updated": "2025-04-05T15:04:05.954534"
+}

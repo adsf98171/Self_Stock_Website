@@ -34,12 +34,168 @@ def datetimeformat(value, format='%Y-%m-%d %H:%M:%S'):
         return value.strftime(format)
     except:
         return "N/A"
-
 def create_interactive_plot(ticker_symbol, period):
-    # ... (保持原有的 create_interactive_plot 函數不變) ...
+    try:
+        # 獲取股票數據
+        stock = yf.Ticker(ticker_symbol)
+        
+        # 根據不同期間設置適當的interval
+        if period == "1d":
+            interval = "1m"
+        elif period == "5d":
+            interval = "15m"
+        else:
+            interval = "1d"
+            
+        hist = stock.history(period=period, interval=interval)
+        
+        if hist.empty:
+            raise ValueError("No data available for the given period")
+        
+        # 創建Plotly圖表
+        fig = make_subplots(rows=1, cols=1)
+        
+        # 添加收盤價線
+        fig.add_trace(
+            go.Scatter(
+                x=hist.index,
+                y=hist['Close'],
+                name='收盤價',
+                line=dict(color='blue'),
+                hovertemplate='%{x|%Y-%m-%d %H:%M}<br>價格: %{y:.2f} TWD<extra></extra>'
+            ),
+            row=1, col=1
+        )
+        
+        # 如果不是日內數據，添加開盤價和價格區間
+        if period != "1d":
+            fig.add_trace(
+                go.Scatter(
+                    x=hist.index,
+                    y=hist['Open'],
+                    name='開盤價',
+                    line=dict(color='green', dash='dot'),
+                    hovertemplate='%{x|%Y-%m-%d}<br>開盤價: %{y:.2f} TWD<extra></extra>'
+                ),
+                row=1, col=1
+            )
+            
+            # 添加高低價範圍
+            fig.add_trace(
+                go.Scatter(
+                    x=hist.index.tolist() + hist.index.tolist()[::-1],
+                    y=hist['High'].tolist() + hist['Low'].tolist()[::-1],
+                    fill='toself',
+                    fillcolor='rgba(128,128,128,0.2)',
+                    line=dict(color='rgba(255,255,255,0)'),
+                    hoverinfo='skip',
+                    name='高低價範圍'
+                ),
+                row=1, col=1
+            )
+        
+        # 更新圖表佈局
+        fig.update_layout(
+            title=f'{ticker_symbol} {period}股價走勢',
+            xaxis_title='日期',
+            yaxis_title='價格 (TWD)',
+            hovermode='x unified',
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            ),
+            template='plotly_white',
+            margin=dict(l=50, r=50, b=50, t=50, pad=4),
+            height=400
+        )
+        
+        # 將圖表轉為HTML
+        plot_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
+        
+        return plot_html
+    except Exception as e:
+        print(f"Error creating interactive plot: {str(e)}")
+        return None
 
 def create_prophet_forecast(ticker_symbol, periods=30):
-    # ... (保持原有的 create_prophet_forecast 函數不變) ...
+    try:
+        # 獲取股票數據 (至少1年數據)
+        stock = yf.Ticker(ticker_symbol)
+        hist = stock.history(period="1y")
+        
+        if hist.empty:
+            raise ValueError("No data available for forecasting")
+        
+        # 準備Prophet數據 - 移除時區信息
+        df = hist.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
+        df['ds'] = df['ds'].dt.tz_localize(None)  # 移除時區信息
+        
+        # 創建並訓練模型
+        model = Prophet(
+            daily_seasonality=False,
+            weekly_seasonality=True,
+            yearly_seasonality=True,
+            changepoint_prior_scale=0.05,
+            seasonality_mode='multiplicative'
+        )
+        
+        # 添加台灣假期
+        taiwan_holidays = pd.DataFrame({
+            'holiday': 'taiwan_holiday',
+            'ds': pd.to_datetime([
+                '2025-01-01', '2025-02-28', '2025-04-04', '2025-04-05',
+                '2025-05-01', '2025-06-14', '2025-09-21', '2025-10-10'
+            ]),
+            'lower_window': 0,
+            'upper_window': 1,
+        })
+        model.add_country_holidays(country_name='TW')
+        
+        model.fit(df)
+        
+        # 建立未來預測
+        future = model.make_future_dataframe(periods=periods)
+        forecast = model.predict(future)
+        
+        # 使用Plotly繪製預測結果
+        fig = plot_plotly(model, forecast)
+        
+        # 自定義圖表佈局
+        fig.update_layout(
+            title=f'{ticker_symbol} 未來{periods}天股價預測',
+            xaxis_title='日期',
+            yaxis_title='價格 (TWD)',
+            hovermode='x unified',
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            ),
+            template='plotly_white',
+            margin=dict(l=50, r=50, b=50, t=80, pad=4),
+            height=500
+        )
+        
+        # 添加一些自定義樣式
+        fig.data[0].line.color = 'blue'  # 實際值
+        fig.data[1].line.color = 'red'   # 預測值
+        fig.data[2].fillcolor = 'rgba(255, 0, 0, 0.2)'  # 不確定性區間
+        
+        # 添加模型組件圖
+        components_fig = model.plot_components(forecast)
+        
+        # 將圖表轉為HTML
+        plot_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
+        
+        return plot_html
+    except Exception as e:
+        print(f"Error creating Prophet forecast: {str(e)}")
+        return None
 
 def generate_static_files():
     ticker = "2330.TW"

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台積電(2330)股票資訊 - 含預測模型</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #0056b3;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .stock-info {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .info-item {
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .info-item h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .history-table th, .history-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .history-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .history-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .news-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .news-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        .update-time {
+            text-align: right;
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 20px;
+        }
+        .section-title {
+            color: #0056b3;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        .forecast-note {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        @media (max-width: 768px) {
+            .stock-info {
+                grid-template-columns: 1fr;
+            }
+            .history-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>台積電(2330)股票資訊 - 含預測模型</h1>
+        </header>
+        
+        <div class="stock-info">
+            <div class="info-item">
+                <h3>當前價格</h3>
+                <div class="price">{{ current_price }} TWD</div>
+            </div>
+            <div class="info-item">
+                <h3>今日最高</h3>
+                <div>{{ day_high }} TWD</div>
+            </div>
+            <div class="info-item">
+                <h3>今日最低</h3>
+                <div>{{ day_low }} TWD</div>
+            </div>
+            <div class="info-item">
+                <h3>昨日收盤</h3>
+                <div>{{ previous_close }} TWD</div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">即時走勢圖</h2>
+        <div class="chart-container">
+            <h3>今日股價走勢</h3>
+            {% if plot_1day %}
+                {{ plot_1day|safe }}
+            {% else %}
+                <p>無法載入今日走勢圖</p>
+            {% endif %}
+        </div>
+        
+        <h2 class="section-title">近期走勢</h2>
+        <div class="chart-container">
+            <h3>近一週股價走勢</h3>
+            {% if plot_1week %}
+                {{ plot_1week|safe }}
+            {% else %}
+                <p>無法載入近一週走勢圖</p>
+            {% endif %}
+        </div>
+        
+        <div class="chart-container">
+            <h3>近兩週股價走勢</h3>
+            {% if plot_2weeks %}
+                {{ plot_2weeks|safe }}
+            {% else %}
+                <p>無法載入近兩週走勢圖</p>
+            {% endif %}
+        </div>
+        
+        <div class="chart-container">
+            <h3>近一個月股價走勢</h3>
+            {% if plot_1month %}
+                {{ plot_1month|safe }}
+            {% else %}
+                <p>無法載入近一個月走勢圖</p>
+            {% endif %}
+        </div>
+        
+        <h2 class="section-title">未來30天股價預測 (Prophet模型)</h2>
+        <div class="chart-container">
+            {% if prophet_forecast %}
+                {{ prophet_forecast|safe }}
+                <div class="forecast-note">
+                    <p><strong>注意：</strong>此預測基於Facebook Prophet時間序列模型，僅供參考不構成投資建議。股票市場受多種因素影響，實際走勢可能與預測有顯著差異。</p>
+                </div>
+            {% else %}
+                <p>無法載入股價預測圖</p>
+            {% endif %}
+        </div>
+        
+        <h2 class="section-title">歷史交易數據</h2>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>開盤價</th>
+                    <th>最高價</th>
+                    <th>最低價</th>
+                    <th>收盤價</th>
+                    <th>成交量</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in history_list %}
+                <tr>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.open }}</td>
+                    <td>{{ item.high }}</td>
+                    <td>{{ item.low }}</td>
+                    <td>{{ item.close }}</td>
+                    <td>{{ item.volume }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <h2 class="section-title">相關新聞</h2>
+        <div class="news-container">
+            {% if news %}
+                {% for item in news %}
+                <div class="news-item">
+                    <h3><a href="{{ item.link }}" target="_blank">{{ item.title }}</a></h3>
+                    <p>{{ item.publisher }} - {{ item.publishedAt|datetimeformat }}</p>
+                    {% if item.get('thumbnail') %}
+                    <img src="{{ item.thumbnail.resolutions.0.url }}" alt="新聞縮圖" style="max-width: 200px; margin-top: 10px;">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>目前沒有相關新聞</p>
+            {% endif %}
+        </div>
+        
+        <div class="update-time">
+            最後更新時間: {{ last_updated|datetimeformat }}
+        </div>
+    </div>
+</body>
+</html>

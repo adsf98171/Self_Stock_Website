@@ -294,17 +294,7 @@
             <h3><a href="#" target="_blank">無標題</a></h3>
             <p>未知來源 - 2025-04-05 17:22:28</p>
         </div>
-        
-            
-                
-                <div class="news-item">
-                    <h3><a href="{{ item.link }}" target="_blank">{{ item.title }}</a></h3>
-                    <p>{{ item.publisher }} - {{ item.publishedAt|datetimeformat }}</p>
-                    {% if item.get('thumbnail') %}
-                    <img src="{{ item.thumbnail.resolutions.0.url }}" alt="新聞縮圖" style="max-width: 200px; margin-top: 10px;">
-                    
-                </div>
-                
+
             {% else %}
                 <p>目前沒有相關新聞</p>
             

@@ -32,6 +32,6 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add index.html data.json *.html 
+        git add stock_plotly_prophet.html data.json *.html 
         git commit -m "Update stock data"
         git push

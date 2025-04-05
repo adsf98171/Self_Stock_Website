@@ -30,14 +30,12 @@ jobs:
     
     - name: Commit and push changes
       run: |
-        # 禁用 Jekyll 并复制文件
+        # 將 output/ 的內容移動到 docs/（GitHub Pages 的預設路徑）
         mkdir -p docs
-        touch docs/.nojekyll
         cp -r output/* docs/
     
-        # 提交更改
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add docs/
-        git commit -m "Update stock data $(date +'%Y-%m-%d %H:%M')" || echo "No changes"
+        git commit -m "Update stock data and predictions" || echo "No changes to commit"
         git push

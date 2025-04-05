@@ -28,13 +28,18 @@ jobs:
     - name: Generate static files
       run: python generate_static.py
     
-    # 修改你的 GitHub Actions workflow（.github/workflows/update_data.yml）
     - name: Commit and push changes
       run: |
+
+        rm -rf docs
+    
         mkdir -p docs
         cp -r output/* docs/
-        # 添加 .nojekyll 文件
+    
         touch docs/.nojekyll
+    
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
         git add docs/
-        git commit -m "Update data and disable Jekyll"
+        git commit -m "Move output to docs for GitHub Pages"
         git push

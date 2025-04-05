@@ -30,16 +30,25 @@ jobs:
     
     - name: Commit and push changes
       run: |
-
-        rm -rf docs
-    
+ 
+        rm -rf docs || true
         mkdir -p docs
-        cp -r output/* docs/
-    
-        touch docs/.nojekyll
+  
+        if [ -d "output/" ] && [ "$(ls -A output/)" ]; then
+          cp -r output/* docs/
+        else
+          echo "Error: output/ is empty or missing!"
+          exit 1
+        fi
+  
+        echo "Disabling Jekyll" > docs/.nojekyll
     
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add docs/
-        git commit -m "Move output to docs for GitHub Pages"
-        git push
+        git add --force docs/
+        git commit -m "Auto-update: $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+    
+        git pull --rebase
+        git push origin HEAD:main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

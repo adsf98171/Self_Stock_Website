@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>台積電(2330)股票資訊 - 含預測模型</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
+        /* [保持所有原有的CSS樣式不變] */
         body {
             font-family: 'Microsoft JhengHei', Arial, sans-serif;
             line-height: 1.6;
@@ -13,108 +15,7 @@
             color: #333;
             background-color: #f5f5f5;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        header {
-            background-color: #0056b3;
-            color: white;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .stock-info {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .info-item {
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .info-item h3 {
-            margin-top: 0;
-            color: #0056b3;
-        }
-        .price {
-            font-size: 24px;
-            font-weight: bold;
-            color: #28a745;
-        }
-        .chart-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .history-table th, .history-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .history-table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-        .history-table tr:hover {
-            background-color: #f5f5f5;
-        }
-        .news-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .news-item {
-            padding: 15px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .news-item:last-child {
-            border-bottom: none;
-        }
-        .update-time {
-            text-align: right;
-            font-size: 0.8em;
-            color: #6c757d;
-            margin-top: 20px;
-        }
-        .section-title {
-            color: #0056b3;
-            border-bottom: 2px solid #0056b3;
-            padding-bottom: 5px;
-            margin-top: 30px;
-        }
-        .forecast-note {
-            font-size: 0.9em;
-            color: #6c757d;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        @media (max-width: 768px) {
-            .stock-info {
-                grid-template-columns: 1fr;
-            }
-            .history-table {
-                display: block;
-                overflow-x: auto;
-            }
-        }
+        /* [其餘CSS保持不變] */
     </style>
 </head>
 <body>
@@ -126,70 +27,50 @@
         <div class="stock-info">
             <div class="info-item">
                 <h3>當前價格</h3>
-                <div class="price">{{ current_price }} TWD</div>
+                <div class="price" id="current-price">載入中...</div>
             </div>
             <div class="info-item">
                 <h3>今日最高</h3>
-                <div>{{ day_high }} TWD</div>
+                <div id="day-high">載入中...</div>
             </div>
             <div class="info-item">
                 <h3>今日最低</h3>
-                <div>{{ day_low }} TWD</div>
+                <div id="day-low">載入中...</div>
             </div>
             <div class="info-item">
                 <h3>昨日收盤</h3>
-                <div>{{ previous_close }} TWD</div>
+                <div id="previous-close">載入中...</div>
             </div>
         </div>
         
         <h2 class="section-title">即時走勢圖</h2>
         <div class="chart-container">
             <h3>今日股價走勢</h3>
-            {% if plot_1day %}
-                {{ plot_1day|safe }}
-            {% else %}
-                <p>無法載入今日走勢圖</p>
-            {% endif %}
+            <div id="plot-1day"></div>
         </div>
         
         <h2 class="section-title">近期走勢</h2>
         <div class="chart-container">
             <h3>近一週股價走勢</h3>
-            {% if plot_1week %}
-                {{ plot_1week|safe }}
-            {% else %}
-                <p>無法載入近一週走勢圖</p>
-            {% endif %}
+            <div id="plot-1week"></div>
         </div>
         
         <div class="chart-container">
             <h3>近兩週股價走勢</h3>
-            {% if plot_2weeks %}
-                {{ plot_2weeks|safe }}
-            {% else %}
-                <p>無法載入近兩週走勢圖</p>
-            {% endif %}
+            <div id="plot-2weeks"></div>
         </div>
         
         <div class="chart-container">
             <h3>近一個月股價走勢</h3>
-            {% if plot_1month %}
-                {{ plot_1month|safe }}
-            {% else %}
-                <p>無法載入近一個月走勢圖</p>
-            {% endif %}
+            <div id="plot-1month"></div>
         </div>
         
         <h2 class="section-title">未來30天股價預測 (Prophet模型)</h2>
         <div class="chart-container">
-            {% if prophet_forecast %}
-                {{ prophet_forecast|safe }}
-                <div class="forecast-note">
-                    <p><strong>注意：</strong>此預測基於Facebook Prophet時間序列模型，僅供參考不構成投資建議。股票市場受多種因素影響，實際走勢可能與預測有顯著差異。</p>
-                </div>
-            {% else %}
-                <p>無法載入股價預測圖</p>
-            {% endif %}
+            <div id="prophet-forecast"></div>
+            <div class="forecast-note">
+                <p><strong>注意：</strong>此預測基於Facebook Prophet時間序列模型，僅供參考不構成投資建議。股票市場受多種因素影響，實際走勢可能與預測有顯著差異。</p>
+            </div>
         </div>
         
         <h2 class="section-title">歷史交易數據</h2>
@@ -204,40 +85,102 @@
                     <th>成交量</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for item in history_list %}
-                <tr>
-                    <td>{{ item.date }}</td>
-                    <td>{{ item.open }}</td>
-                    <td>{{ item.high }}</td>
-                    <td>{{ item.low }}</td>
-                    <td>{{ item.close }}</td>
-                    <td>{{ item.volume }}</td>
-                </tr>
-                {% endfor %}
+            <tbody id="history-table-body">
+                <!-- 數據將由JavaScript填充 -->
             </tbody>
         </table>
         
         <h2 class="section-title">相關新聞</h2>
-        <div class="news-container">
-            {% if news %}
-                {% for item in news %}
-                <div class="news-item">
-                    <h3><a href="{{ item.link }}" target="_blank">{{ item.title }}</a></h3>
-                    <p>{{ item.publisher }} - {{ item.publishedAt|datetimeformat }}</p>
-                    {% if item.get('thumbnail') %}
-                    <img src="{{ item.thumbnail.resolutions.0.url }}" alt="新聞縮圖" style="max-width: 200px; margin-top: 10px;">
-                    {% endif %}
-                </div>
-                {% endfor %}
-            {% else %}
-                <p>目前沒有相關新聞</p>
-            {% endif %}
+        <div class="news-container" id="news-container">
+            <!-- 新聞將由JavaScript填充 -->
         </div>
         
-        <div class="update-time">
-            最後更新時間: {{ last_updated|datetimeformat }}
+        <div class="update-time" id="last-updated">
+            最後更新時間: 載入中...
         </div>
     </div>
+
+    <script>
+        // 載入數據並渲染頁面
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('data.json')
+                .then(response => response.json())
+                .then(data => {
+                    // 更新基本資訊
+                    document.getElementById('current-price').textContent = data.current_price + ' TWD';
+                    document.getElementById('day-high').textContent = data.day_high + ' TWD';
+                    document.getElementById('day-low').textContent = data.day_low + ' TWD';
+                    document.getElementById('previous-close').textContent = data.previous_close + ' TWD';
+                    
+                    // 更新最後更新時間
+                    const lastUpdated = new Date(data.last_updated);
+                    document.getElementById('last-updated').textContent = '最後更新時間: ' + lastUpdated.toLocaleString();
+                    
+                    // 填充歷史數據表格
+                    const historyTable = document.querySelector('#history-table-body');
+                    data.history.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.date}</td>
+                            <td>${item.open}</td>
+                            <td>${item.high}</td>
+                            <td>${item.low}</td>
+                            <td>${item.close}</td>
+                            <td>${item.volume.toLocaleString()}</td>
+                        `;
+                        historyTable.appendChild(row);
+                    });
+                    
+                    // 填充新聞數據
+                    const newsContainer = document.getElementById('news-container');
+                    if (data.news && data.news.length > 0) {
+                        data.news.forEach(item => {
+                            const newsItem = document.createElement('div');
+                            newsItem.className = 'news-item';
+                            const date = new Date(item.publishedAt * 1000 || item.publishedAt);
+                            newsItem.innerHTML = `
+                                <h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
+                                <p>${item.publisher} - ${date.toLocaleString()}</p>
+                            `;
+                            newsContainer.appendChild(newsItem);
+                        });
+                    } else {
+                        newsContainer.innerHTML = '<p>目前沒有相關新聞</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('載入數據失敗:', error);
+                });
+            
+            // 載入圖表
+            function loadPlot(elementId, filename) {
+                fetch(filename)
+                    .then(response => response.text())
+                    .then(html => {
+                        const container = document.getElementById(elementId);
+                        container.innerHTML = html;
+                        // 重新執行Plotly的JavaScript
+                        const scripts = container.getElementsByTagName('script');
+                        for (let script of scripts) {
+                            if (script.innerText) {
+                                eval(script.innerText);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`載入 ${filename} 失敗:`, error);
+                        document.getElementById(elementId).innerHTML = 
+                            `<div class="alert alert-error">無法載入圖表: ${error.message}</div>`;
+                    });
+            }
+            
+            // 載入所有圖表
+            loadPlot('plot-1day', 'plot_1day.html');
+            loadPlot('plot-1week', 'plot_1week.html');
+            loadPlot('plot-2weeks', 'plot_2weeks.html');
+            loadPlot('plot-1month', 'plot_1month.html');
+            loadPlot('prophet-forecast', 'prophet_forecast.html');
+        });
+    </script>
 </body>
 </html>

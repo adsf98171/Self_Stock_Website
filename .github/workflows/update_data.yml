@@ -30,25 +30,8 @@ jobs:
     
     - name: Commit and push changes
       run: |
- 
-        rm -rf docs || true
-        mkdir -p docs
-  
-        if [ -d "output/" ] && [ "$(ls -A output/)" ]; then
-          cp -r output/* docs/
-        else
-          echo "Error: output/ is empty or missing!"
-          exit 1
-        fi
-  
-        echo "Disabling Jekyll" > docs/.nojekyll
-    
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add --force docs/
-        git commit -m "Auto-update: $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-    
-        git pull --rebase
-        git push origin HEAD:main
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        git add index.html data.json *.html 
+        git commit -m "Update stock data"
+        git push

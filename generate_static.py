@@ -243,7 +243,7 @@ def generate_static_files():
         print(f"Error processing news: {str(e)}")
     
     # 載入模板
-    template = load_template('stock_plotly_prophet.html')
+    template = load_template('index.html')
     
     # 替換模板中的變數
     html_content = template.replace('{{ current_price }}', str(current_price))

@@ -106,6 +106,12 @@
             background-color: #f8f9fa;
             border-radius: 5px;
         }
+        .error-message {
+            color: #dc3545;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 4px;
+        }
         @media (max-width: 768px) {
             .stock-info {
                 grid-template-columns: 1fr;
@@ -123,6 +129,7 @@
             <h1>台積電(2330)股票資訊 - 含預測模型</h1>
         </header>
         
+        <!-- 股票基本資訊 -->
         <div class="stock-info">
             <div class="info-item">
                 <h3>當前價格</h3>
@@ -142,36 +149,60 @@
             </div>
         </div>
         
+        <!-- 即時走勢圖 -->
         <h2 class="section-title">即時走勢圖</h2>
         <div class="chart-container">
             <h3>今日股價走勢</h3>
-            {{ plot_1day if plot_1day else '<p>無法載入今日走勢圖</p>'|safe }}
+            {% if plot_1day %}
+                {{ plot_1day|safe }}
+            {% else %}
+                <div class="error-message">無法載入今日走勢圖</div>
+            {% endif %}
         </div>
         
+        <!-- 近期走勢 -->
         <h2 class="section-title">近期走勢</h2>
         <div class="chart-container">
             <h3>近一週股價走勢</h3>
-            {{ plot_1week if plot_1week else '<p>無法載入近一週走勢圖</p>'|safe }}
+            {% if plot_1week %}
+                {{ plot_1week|safe }}
+            {% else %}
+                <div class="error-message">無法載入近一週走勢圖</div>
+            {% endif %}
         </div>
         
         <div class="chart-container">
             <h3>近兩週股價走勢</h3>
-            {{ plot_2weeks if plot_2weeks else '<p>無法載入近兩週走勢圖</p>'|safe }}
+            {% if plot_2weeks %}
+                {{ plot_2weeks|safe }}
+            {% else %}
+                <div class="error-message">無法載入近兩週走勢圖</div>
+            {% endif %}
         </div>
         
         <div class="chart-container">
             <h3>近一個月股價走勢</h3>
-            {{ plot_1month if plot_1month else '<p>無法載入近一個月走勢圖</p>'|safe }}
+            {% if plot_1month %}
+                {{ plot_1month|safe }}
+            {% else %}
+                <div class="error-message">無法載入近一個月走勢圖</div>
+            {% endif %}
         </div>
         
+        <!-- 股價預測 -->
         <h2 class="section-title">未來30天股價預測 (Prophet模型)</h2>
         <div class="chart-container">
-            {{ prophet_forecast if prophet_forecast else '<p>無法載入股價預測圖</p>'|safe }}
-            <div class="forecast-note">
-                <p><strong>注意：</strong>此預測基於Facebook Prophet時間序列模型，僅供參考不構成投資建議。</p>
-            </div>
+            {% if prophet_forecast %}
+                {{ prophet_forecast|safe }}
+                <div class="forecast-note">
+                    <p><strong>注意：</strong>此預測基於時間序列模型，實際走勢可能與預測有差異。</p>
+                </div>
+            {% else %}
+                <div class="error-message">無法載入股價預測圖</div>
+            {% endif %}
         </div>
         
+        <!-- 歷史數據 -->
         <h2 class="section-title">歷史交易數據</h2>
         <table class="history-table">
             <thead>
@@ -194,10 +225,15 @@
                     <td>{{ item.close }}</td>
                     <td>{{ item.volume }}</td>
                 </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center;">無歷史數據</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
         
+        <!-- 相關新聞 -->
         <h2 class="section-title">相關新聞</h2>
         <div class="news-container">
             {% if news %}
@@ -212,6 +248,7 @@
             {% endif %}
         </div>
         
+        <!-- 更新時間 -->
         <div class="update-time">
             最後更新時間: {{ last_updated }}
         </div>

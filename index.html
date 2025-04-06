@@ -5,7 +5,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>台積電(2330)股票資訊 - 含預測模型</title>
     <style>
-        /* [保持原有的CSS樣式不變] */
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #0056b3;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .stock-info {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .info-item {
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .info-item h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .history-table th, .history-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .history-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .history-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .news-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .news-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        .update-time {
+            text-align: right;
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 20px;
+        }
+        .section-title {
+            color: #0056b3;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        .forecast-note {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        @media (max-width: 768px) {
+            .stock-info {
+                grid-template-columns: 1fr;
+            }
+            .history-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 <body>

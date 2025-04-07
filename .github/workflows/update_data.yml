@@ -2,7 +2,7 @@ name: Update Stock Data Daily
 
 on:
   schedule:
-    - cron: '0 18 * * *'  # 每天 UTC 時間 18:00 (台灣時間凌晨2點)
+    - cron: '0 10 * * *'  # UTC 10:00 = 台灣時間 18:00
   workflow_dispatch:  # 允許手動觸發
 
 jobs:

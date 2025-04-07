@@ -1,3 +1,5 @@
+這是 generate_static.py: 
+
 import yfinance as yf
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -242,53 +244,32 @@ def generate_static_files():
             })
     except Exception as e:
         print(f"Error processing news: {str(e)}")
+
+    # ==============================
+    # 改用 Jinja2 渲染模板 (取代所有手動替換)
+    # ==============================
+    env = Environment(loader=FileSystemLoader('.'))
+    env.filters['datetimeformat'] = datetimeformat
     
-    # 載入模板
-    template = load_template('stock_plotly_prophet.html')
-    
-    # 替換模板中的變數
-    html_content = template.replace('{{ current_price }}', str(current_price))
-    html_content = html_content.replace('{{ day_high }}', str(day_high))
-    html_content = html_content.replace('{{ day_low }}', str(day_low))
-    html_content = html_content.replace('{{ previous_close }}', str(previous_close))
-    
-    # 替換圖表
-    html_content = html_content.replace('{{ plot_1day|safe }}', plot_1day or '<p>無法載入今日走勢圖</p>')
-    html_content = html_content.replace('{{ plot_1week|safe }}', plot_1week or '<p>無法載入近一週走勢圖</p>')
-    html_content = html_content.replace('{{ plot_2weeks|safe }}', plot_2weeks or '<p>無法載入近兩週走勢圖</p>')
-    html_content = html_content.replace('{{ plot_1month|safe }}', plot_1month or '<p>無法載入近一個月走勢圖</p>')
-    html_content = html_content.replace('{{ prophet_forecast|safe }}', prophet_forecast or '<p>無法載入股價預測圖</p>')
-    
-    # 替換歷史數據
-    history_rows = ""
-    for item in history_list:
-        history_rows += f"""
-        <tr>
-            <td>{item['date']}</td>
-            <td>{item['open']}</td>
-            <td>{item['high']}</td>
-            <td>{item['low']}</td>
-            <td>{item['close']}</td>
-            <td>{item['volume']}</td>
-        </tr>
-        """
-    html_content = html_content.replace('{% for item in history_list %}', '').replace('{% endfor %}', '').replace('{{ item.date }}', '').replace('{{ item.open }}', '').replace('{{ item.high }}', '').replace('{{ item.low }}', '').replace('{{ item.close }}', '').replace('{{ item.volume }}', '')
-    html_content = html_content.replace('<tbody>', f'<tbody>{history_rows}')
-    
-    # 替換新聞數據
-    news_items_html = ""
-    for item in news:
-        news_items_html += f"""
-        <div class="news-item">
-            <h3><a href="{item['link']}" target="_blank">{item['title']}</a></h3>
-            <p>{item['publisher']} - {item['publishedAt']}</p>
-        </div>
-        """
-    html_content = html_content.replace('{% if news %}', '').replace('{% endif %}', '').replace('{% for item in news %}', '').replace('{% endfor %}', '')
-    html_content = html_content.replace('<div class="news-container">', f'<div class="news-container">{news_items_html}')
-    
-    # 替換最後更新時間
-    html_content = html_content.replace('{{ last_updated|datetimeformat }}', datetimeformat(datetime.datetime.now()))
+    try:
+        template = env.get_template('index.html')
+        html_content = template.render(
+            current_price=current_price,
+            day_high=day_high,
+            day_low=day_low,
+            previous_close=previous_close,
+            plot_1day=plot_1day,
+            plot_1week=plot_1week,
+            plot_2weeks=plot_2weeks,
+            plot_1month=plot_1month,
+            prophet_forecast=prophet_forecast,
+            history_list=history_list,
+            news=news,
+            last_updated=datetime.datetime.now()
+        )
+    except Exception as e:
+        print(f"模板渲染錯誤: {str(e)}")
+        html_content = "<h1>頁面生成錯誤</h1>"
     
     # 儲存 HTML 檔案
     save_html('index.html', html_content)

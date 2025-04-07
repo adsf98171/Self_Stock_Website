@@ -1,4 +1,4 @@
-這是 generate_static.py: 
+#這是 generate_static.py: 
 
 import yfinance as yf
 import plotly.graph_objects as go

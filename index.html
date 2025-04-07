@@ -1,1 +1,204 @@
-<h1>頁面生成錯誤</h1>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ ticker }} 股票數據</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .price-card {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 150px;
+            text-align: center;
+        }
+        .price-card .label {
+            font-size: 14px;
+            color: #666;
+        }
+        .price-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .up { color: #28a745; }
+        .down { color: #dc3545; }
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .history-table th, .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .history-table th {
+            background: #f8f9fa;
+        }
+        .news-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .news-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .news-item a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ ticker }} 台積電股票數據</h1>
+            <p>最後更新時間: {{ last_updated.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        </div>
+
+        <!-- 當前價格資訊 -->
+        <div style="text-align: center;">
+            <div class="price-card">
+                <div class="label">當前價格</div>
+                <div class="value">{{ current_price }} TWD</div>
+            </div>
+            <div class="price-card">
+                <div class="label">今日最高</div>
+                <div class="value">{{ day_high }} TWD</div>
+            </div>
+            <div class="price-card">
+                <div class="label">今日最低</div>
+                <div class="value">{{ day_low }} TWD</div>
+            </div>
+            <div class="price-card">
+                <div class="label">昨日收盤</div>
+                <div class="value">{{ previous_close }} TWD</div>
+            </div>
+        </div>
+
+        <!-- 1 天走勢圖 -->
+        <div class="chart-container">
+            <h2>1 天股價走勢</h2>
+            {% if plot_1day %}
+                {{ plot_1day|safe }}
+            {% else %}
+                <p>無法載入 1 天走勢圖</p>
+            {% endif %}
+        </div>
+
+        <!-- 1 週走勢圖 -->
+        <div class="chart-container">
+            <h2>1 週股價走勢</h2>
+            {% if plot_1week %}
+                {{ plot_1week|safe }}
+            {% else %}
+                <p>無法載入 1 週走勢圖</p>
+            {% endif %}
+        </div>
+
+        <!-- 1 個月走勢圖 -->
+        <div class="chart-container">
+            <h2>1 個月股價走勢</h2>
+            {% if plot_1month %}
+                {{ plot_1month|safe }}
+            {% else %}
+                <p>無法載入 1 個月走勢圖</p>
+            {% endif %}
+        </div>
+
+        <!-- Prophet 預測圖 -->
+        <div class="chart-container">
+            <h2>未來 30 天股價預測 (Prophet)</h2>
+            {% if prophet_forecast %}
+                {{ prophet_forecast|safe }}
+            {% else %}
+                <p>無法載入預測圖表</p>
+            {% endif %}
+        </div>
+
+        <!-- 歷史數據表格 -->
+        <div class="chart-container">
+            <h2>最近 5 天歷史數據</h2>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>開盤價</th>
+                        <th>最高價</th>
+                        <th>最低價</th>
+                        <th>收盤價</th>
+                        <th>成交量</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in history_list %}
+                    <tr>
+                        <td>{{ item.date }}</td>
+                        <td>{{ item.open }}</td>
+                        <td>{{ item.high }}</td>
+                        <td>{{ item.low }}</td>
+                        <td>{{ item.close }}</td>
+                        <td>{{ "{:,}".format(item.volume) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 新聞列表 -->
+        <div class="chart-container">
+            <h2>相關新聞</h2>
+            {% if news %}
+                {% for item in news %}
+                <div class="news-item">
+                    <h3><a href="{{ item.link }}" target="_blank">{{ item.title }}</a></h3>
+                    <p>{{ item.publisher }} · {{ item.publishedAt }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>暫無相關新聞</p>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>數據來源: Yahoo Finance | 生成時間: {{ last_updated.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        </div>
+    </div>
+</body>
+</html>

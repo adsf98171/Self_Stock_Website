@@ -3,234 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台積電(2330)股票資訊 - 含預測模型</title>
+    <title>台積電 (2330.TW) 股價分析</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 圖標 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 自訂 CSS -->
     <style>
         body {
-            font-family: 'Microsoft JhengHei', Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-            background-color: #f5f5f5;
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
         }
-        header {
-            background-color: #0056b3;
+        .card-header {
+            background-color: #0d6efd;
             color: white;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .stock-info {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .info-item {
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .info-item h3 {
-            margin-top: 0;
-            color: #0056b3;
-        }
-        .price {
-            font-size: 24px;
+            border-radius: 10px 10px 0 0 !important;
             font-weight: bold;
+        }
+        .price-card {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: white;
+        }
+        .price-change {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .up {
             color: #28a745;
         }
-        .chart-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+        .down {
+            color: #dc3545;
         }
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .history-table th, .history-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .history-table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-        .history-table tr:hover {
-            background-color: #f5f5f5;
-        }
-        .news-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .last-updated {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-align: right;
         }
         .news-item {
-            padding: 15px 0;
-            border-bottom: 1px solid #eee;
+            border-left: 3px solid #0d6efd;
+            padding-left: 10px;
+            margin-bottom: 10px;
         }
-        .news-item:last-child {
-            border-bottom: none;
+        .news-item:hover {
+            background-color: #f1f1f1;
         }
-        .update-time {
-            text-align: right;
-            font-size: 0.8em;
-            color: #6c757d;
-            margin-top: 20px;
-        }
-        .section-title {
-            color: #0056b3;
-            border-bottom: 2px solid #0056b3;
-            padding-bottom: 5px;
-            margin-top: 30px;
-        }
-        .forecast-note {
-            font-size: 0.9em;
-            color: #6c757d;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        @media (max-width: 768px) {
-            .stock-info {
-                grid-template-columns: 1fr;
-            }
-            .history-table {
-                display: block;
-                overflow-x: auto;
-            }
+        .table-hover tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.1);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>{{ ticker }} 台積電股票數據</h1>
-            <p>最後更新時間: {{ last_updated.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-        </div>
-
-        <!-- 當前價格資訊 -->
-        <div style="text-align: center;">
-            <div class="price-card">
-                <div class="label">當前價格</div>
-                <div class="value">{{ current_price }} TWD</div>
-            </div>
-            <div class="price-card">
-                <div class="label">今日最高</div>
-                <div class="value">{{ day_high }} TWD</div>
-            </div>
-            <div class="price-card">
-                <div class="label">今日最低</div>
-                <div class="value">{{ day_low }} TWD</div>
-            </div>
-            <div class="price-card">
-                <div class="label">昨日收盤</div>
-                <div class="value">{{ previous_close }} TWD</div>
+    <div class="container py-4">
+        <!-- 頁面標題 -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold">
+                    <i class="fas fa-chart-line"></i> 台積電 (2330.TW)
+                </h1>
+                <p class="text-muted">即時股價與分析</p>
             </div>
         </div>
 
-        <!-- 1 天走勢圖 -->
-        <div class="chart-container">
-            <h2>1 天股價走勢</h2>
-            {% if plot_1day %}
-                {{ plot_1day|safe }}
-            {% else %}
-                <p>無法載入 1 天走勢圖</p>
-            {% endif %}
-        </div>
-
-        <!-- 1 週走勢圖 -->
-        <div class="chart-container">
-            <h2>1 週股價走勢</h2>
-            {% if plot_1week %}
-                {{ plot_1week|safe }}
-            {% else %}
-                <p>無法載入 1 週走勢圖</p>
-            {% endif %}
-        </div>
-
-        <!-- 1 個月走勢圖 -->
-        <div class="chart-container">
-            <h2>1 個月股價走勢</h2>
-            {% if plot_1month %}
-                {{ plot_1month|safe }}
-            {% else %}
-                <p>無法載入 1 個月走勢圖</p>
-            {% endif %}
-        </div>
-
-        <!-- Prophet 預測圖 -->
-        <div class="chart-container">
-            <h2>未來 30 天股價預測 (Prophet)</h2>
-            {% if prophet_forecast %}
-                {{ prophet_forecast|safe }}
-            {% else %}
-                <p>無法載入預測圖表</p>
-            {% endif %}
-        </div>
-
-        <!-- 歷史數據表格 -->
-        <div class="chart-container">
-            <h2>最近 5 天歷史數據</h2>
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>日期</th>
-                        <th>開盤價</th>
-                        <th>最高價</th>
-                        <th>最低價</th>
-                        <th>收盤價</th>
-                        <th>成交量</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in history_list %}
-                    <tr>
-                        <td>{{ item.date }}</td>
-                        <td>{{ item.open }}</td>
-                        <td>{{ item.high }}</td>
-                        <td>{{ item.low }}</td>
-                        <td>{{ item.close }}</td>
-                        <td>{{ "{:,}".format(item.volume) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- 新聞列表 -->
-        <div class="chart-container">
-            <h2>相關新聞</h2>
-            {% if news %}
-                {% for item in news %}
-                <div class="news-item">
-                    <h3><a href="{{ item.link }}" target="_blank">{{ item.title }}</a></h3>
-                    <p>{{ item.publisher }} · {{ item.publishedAt }}</p>
+        <!-- 即時股價卡片 -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card price-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">當前股價</h5>
+                        <h2 class="card-text">{{ current_price }} TWD</h2>
+                        <div class="price-change {% if current_price > previous_close %}up{% else %}down{% endif %}">
+                            {% if current_price != 'N/A' and previous_close != 'N/A' %}
+                                {{ ((current_price - previous_close) / previous_close * 100)|round(2) }}%
+                                ({{ current_price - previous_close }})
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                {% endfor %}
-            {% else %}
-                <p>暫無相關新聞</p>
-            {% endif %}
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-4 text-center">
+                                <h6>今日最高</h6>
+                                <h4>{{ day_high }} TWD</h4>
+                            </div>
+                            <div class="col-4 text-center">
+                                <h6>今日最低</h6>
+                                <h4>{{ day_low }} TWD</h4>
+                            </div>
+                            <div class="col-4 text-center">
+                                <h6>昨日收盤</h6>
+                                <h4>{{ previous_close }} TWD</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="footer">
-            <p>數據來源: Yahoo Finance | 生成時間: {{ last_updated.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        <!-- 圖表區塊 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar"></i> 今日股價走勢
+                    </div>
+                    <div class="card-body">
+                        {{ plot_1day|safe }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line"></i> 近期股價 (5天)
+                    </div>
+                    <div class="card-body">
+                        {{ plot_1week|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-project-diagram"></i> 未來30天預測
+                    </div>
+                    <div class="card-body">
+                        {{ prophet_forecast|safe }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-table"></i> 最近5天歷史數據
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>日期</th>
+                                        <th>開盤</th>
+                                        <th>最高</th>
+                                        <th>最低</th>
+                                        <th>收盤</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in history_list %}
+                                    <tr>
+                                        <td>{{ item.date }}</td>
+                                        <td>{{ item.open }}</td>
+                                        <td>{{ item.high }}</td>
+                                        <td>{{ item.low }}</td>
+                                        <td>{{ item.close }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新聞區塊 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-newspaper"></i> 最新相關新聞
+                    </div>
+                    <div class="card-body">
+                        {% if news %}
+                            {% for item in news %}
+                            <div class="news-item">
+                                <h5><a href="{{ item.link }}" target="_blank">{{ item.title }}</a></h5>
+                                <p class="text-muted">
+                                    {{ item.publisher }} · {{ item.publishedAt }}
+                                </p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">暫無相關新聞</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 頁尾 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <p class="last-updated">
+                    <i class="fas fa-sync-alt"></i> 最後更新: {{ last_updated|datetimeformat }}
+                </p>
+            </div>
         </div>
     </div>
+
+    <!-- Bootstrap JS 和 Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

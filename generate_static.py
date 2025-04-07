@@ -208,6 +208,10 @@ def generate_static_files():
     day_high = info.get('dayHigh', 'N/A')
     day_low = info.get('dayLow', 'N/A')
     previous_close = info.get('previousClose', 'N/A')
+
+    # 檢查數據是否有效
+    if not tsmc.info:
+        raise ValueError("無法獲取股票數據！")
     
     # 生成圖表
     plot_1day = create_interactive_plot(ticker, "1d")

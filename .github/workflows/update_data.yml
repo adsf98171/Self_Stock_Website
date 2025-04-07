@@ -1,37 +1,11 @@
-name: Update Stock Data Daily
-
-on:
-  schedule:
-    - cron: '0 10 * * *'  # UTC 10:00 = 台灣時間 18:00
-  workflow_dispatch:  # 允許手動觸發
-
-jobs:
-  update-data:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3  # 這裡使用 v3 並設置 persist-credentials
-      with:
-        persist-credentials: true  # 這行確保有推送權限
-        fetch-depth: 0  # 獲取所有歷史記錄
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install yfinance prophet plotly pandas jinja2
-    
-    - name: Generate static files
-      run: python generate_static.py
-    
-    - name: Commit and push changes
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add index.html data.json *.html 
-        git commit -m "Update stock data"
-        git push
+- name: Commit and push changes
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 預設的 token，但可能無法 push
+    # 或改用 Personal Access Token (PAT)
+    # GITHUB_TOKEN: ${{ secrets.PAT }}  # 需先在 Repo Settings > Secrets 設定
+  run: |
+    git config --local user.email "action@github.com"
+    git config --local user.name "GitHub Action"
+    git add index.html data.json *.html 
+    git commit -m "Update stock data"
+    git push origin main  # 明確指定分支

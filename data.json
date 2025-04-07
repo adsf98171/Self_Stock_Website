@@ -1,81 +1,73 @@
 {
   "current_price": 848.0,
-  "day_high": 848.0,
-  "day_low": 848.0,
-  "previous_close": 942.0,
   "history": [
     {
-      "date": "2025-03-28",
+      "date": "2025-03-28 08:00:00",
       "open": 946.0,
       "high": 955.0,
       "low": 946.0,
-      "close": 952.0,
-      "volume": 33101234
+      "close": 952.0
     },
     {
-      "date": "2025-03-31",
+      "date": "2025-03-31 08:00:00",
       "open": 920.0,
       "high": 924.0,
       "low": 910.0,
-      "close": 910.0,
-      "volume": 51064611
+      "close": 910.0
     },
     {
-      "date": "2025-04-01",
+      "date": "2025-04-01 08:00:00",
       "open": 929.0,
       "high": 946.0,
       "low": 925.0,
-      "close": 944.0,
-      "volume": 32197752
+      "close": 944.0
     },
     {
-      "date": "2025-04-02",
+      "date": "2025-04-02 08:00:00",
       "open": 949.0,
       "high": 952.0,
       "low": 938.0,
-      "close": 942.0,
-      "volume": 24849656
+      "close": 942.0
     },
     {
-      "date": "2025-04-07",
+      "date": "2025-04-07 08:00:00",
       "open": 848.0,
       "high": 848.0,
       "low": 848.0,
-      "close": 848.0,
-      "volume": 28699931
+      "close": 848.0
     }
   ],
   "news": [
     {
-      "link": "#",
       "title": "無標題",
+      "link": "#",
       "publisher": "未知來源",
-      "publishedAt": "2025-04-07 15:57:32"
+      "publishedAt": "1970-01-01 08:00:00"
     },
     {
-      "link": "#",
       "title": "無標題",
+      "link": "#",
       "publisher": "未知來源",
-      "publishedAt": "2025-04-07 15:57:32"
+      "publishedAt": "1970-01-01 08:00:00"
     },
     {
-      "link": "#",
       "title": "無標題",
+      "link": "#",
       "publisher": "未知來源",
-      "publishedAt": "2025-04-07 15:57:32"
+      "publishedAt": "1970-01-01 08:00:00"
     },
     {
-      "link": "#",
       "title": "無標題",
+      "link": "#",
       "publisher": "未知來源",
-      "publishedAt": "2025-04-07 15:57:32"
+      "publishedAt": "1970-01-01 08:00:00"
     },
     {
-      "link": "#",
       "title": "無標題",
+      "link": "#",
       "publisher": "未知來源",
-      "publishedAt": "2025-04-07 15:57:32"
+      "publishedAt": "1970-01-01 08:00:00"
     }
   ],
-  "last_updated": "2025-04-07T15:57:32.510116"
+  "last_updated": "2025-04-08 01:14:00"
 }

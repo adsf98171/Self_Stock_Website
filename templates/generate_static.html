@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台積電 (2330.TW) 股價分析</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 圖標 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 自訂 CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        .card-header {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: bold;
+        }
+        .price-card {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: white;
+        }
+        .price-change {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .up {
+            color: #28a745;
+        }
+        .down {
+            color: #dc3545;
+        }
+        .last-updated {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-align: right;
+        }
+        .news-item {
+            border-left: 3px solid #0d6efd;
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+        .news-item:hover {
+            background-color: #f1f1f1;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- 頁面標題 -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold">
+                    <i class="fas fa-chart-line"></i> 台積電 (2330.TW)
+                </h1>
+                <p class="text-muted">即時股價與分析</p>
+            </div>
+        </div>
+
+        <!-- 即時股價卡片 -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card price-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">當前股價</h5>
+                        <h2 class="card-text">{{ current_price }} TWD</h2>
+                        <div class="price-change {% if current_price > previous_close %}up{% else %}down{% endif %}">
+                            {% if current_price != 'N/A' and previous_close != 'N/A' %}
+                                {{ ((current_price - previous_close) / previous_close * 100)|round(2) }}%
+                                ({{ current_price - previous_close }})
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-4 text-center">
+                                <h6>今日最高</h6>
+                                <h4>{{ day_high }} TWD</h4>
+                            </div>
+                            <div class="col-4 text-center">
+                                <h6>今日最低</h6>
+                                <h4>{{ day_low }} TWD</h4>
+                            </div>
+                            <div class="col-4 text-center">
+                                <h6>昨日收盤</h6>
+                                <h4>{{ previous_close }} TWD</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 圖表區塊 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar"></i> 今日股價走勢
+                    </div>
+                    <div class="card-body">
+                        {{ plot_1day|safe }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line"></i> 近期股價 (5天)
+                    </div>
+                    <div class="card-body">
+                        {{ plot_1week|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+		<div class="row mb-4">
+		    <div class="col-md-6">
+			    <div class="card">
+				    <div class="card-header">
+                        <i class="fas fa-chart-bar"></i> 長期股價走勢(1個月)
+                    </div>
+                    <div class="card-body">
+                        {{ plot_1mo|safe }}
+                    </div>
+                </div>
+            </div>
+
+        <!--
+            <div class="col-md-6">-->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-project-diagram"></i> 未來30天預測
+                    </div>
+                    <div class="card-body">
+                        {{ prophet_forecast|safe }}
+                    </div>
+                </div>
+            </div>
+			<div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-table"></i> 最近5天歷史數據
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>日期</th>
+                                        <th>開盤</th>
+                                        <th>最高</th>
+                                        <th>最低</th>
+                                        <th>收盤</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in history_list %}
+                                    <tr>
+                                        <td>{{ item.date }}</td>
+                                        <td>{{ item.open }}</td>
+                                        <td>{{ item.high }}</td>
+                                        <td>{{ item.low }}</td>
+                                        <td>{{ item.close }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新聞區塊 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-newspaper"></i> 最新相關新聞
+                    </div>
+                    <div class="card-body">
+                        {% if news %}
+                            {% for item in news %}
+                            <div class="news-item">
+                                <h5><a href="{{ item.link }}" target="_blank">{{ item.title }}</a></h5>
+                                <p class="text-muted">
+                                    {{ item.publisher }} · {{ item.publishedAt }}
+                                </p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">暫無相關新聞</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 頁尾 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <p class="last-updated">
+                    <i class="fas fa-sync-alt"></i> 最後更新: {{ last_updated|datetimeformat }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS 和 Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

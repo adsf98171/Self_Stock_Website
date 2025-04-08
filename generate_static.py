@@ -139,8 +139,8 @@ def create_prophet_forecast(ticker_symbol, periods=30):
         # 簡單修改顏色配置
         fig.data[0].line.color = 'black'   # 實際值改為黑色
         fig.data[1].line.color = 'blue'    # 預測值保持藍色
-        fig.data[2].fillcolor = 'rgba(255, 0, 0, 0.1)'  # 上半部淡紅色
-        fig.data[3].fillcolor = 'rgba(0, 255, 0, 0.1)'  # 下半部淡綠色
+        fig.data[2].fillcolor = 'rgba(0, 255, 0, 0.1)'  # 下半部淡綠色
+        fig.data[3].fillcolor = 'rgba(255, 0, 0, 0.1)'  # 上半部淡紅色
         
         # 更新佈局 (保持不變)
         fig.update_layout(

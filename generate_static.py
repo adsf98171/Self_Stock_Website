@@ -105,49 +105,65 @@ def create_interactive_plot(ticker_symbol, period):
         return "<div class='alert alert-danger'>圖表生成錯誤</div>"
 
 def create_prophet_forecast(ticker_symbol, periods=30):
-    """Prophet 預測模型"""
     try:
-        hist = fetch_stock_data(ticker_symbol, "1y")
+        # 獲取股票數據 (至少1年數據)
+        stock = yf.Ticker(ticker_symbol)
+        hist = stock.history(period="1y")
         
-        if hist.empty or len(hist) < 30:
-            logger.warning("歷史數據不足於30天，無法預測")
-            return "<div class='alert alert-warning'>需至少30天數據進行預測</div>"
-
-        # 準備數據
+        if hist.empty:
+            raise ValueError("No data available for forecasting")
+        
+        # 準備Prophet數據 - 移除時區信息
         df = hist.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
         df['ds'] = df['ds'].dt.tz_localize(None)
         
-        # 訓練模型
+        # 創建並訓練模型
         model = Prophet(
             daily_seasonality=False,
             weekly_seasonality=True,
             yearly_seasonality=True,
-            interval_width=0.95, # 信賴區間
-            changepoint_prior_scale=0.05, # 控制擬合能力，太高(0.5)易overfit、太低(0.01)易underfit
+            interval_width=0.95,
+            changepoint_prior_scale=0.05,
             seasonality_mode='multiplicative'
         )
-        
-        # 添加台灣假期
         model.add_country_holidays(country_name='TW')
         model.fit(df)
         
-        # 生成預測
+        # 建立未來預測
         future = model.make_future_dataframe(periods=periods)
         forecast = model.predict(future)
         
-        # 繪製圖表
+        # 使用Plotly繪製預測結果
         fig = plot_plotly(model, forecast)
+        
+        # 簡單修改顏色配置
+        fig.data[0].line.color = 'black'   # 實際值改為黑色
+        fig.data[1].line.color = 'blue'    # 預測值保持藍色
+        fig.data[2].fillcolor = 'rgba(255, 0, 0, 0.1)'  # 上半部淡紅色
+        fig.data[3].fillcolor = 'rgba(0, 255, 0, 0.1)'  # 下半部淡綠色
+        
+        # 更新佈局 (保持不變)
         fig.update_layout(
-            title=f'未來 {periods} 天預測',
-            height=500,
-            template='plotly_white'
+            title=f'{ticker_symbol} 未來{periods}天股價預測',
+            xaxis_title='日期',
+            yaxis_title='價格 (TWD)',
+            hovermode='x unified',
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            ),
+            template='plotly_white',
+            margin=dict(l=50, r=50, b=50, t=80, pad=4),
+            height=500
         )
         
         return fig.to_html(full_html=False, include_plotlyjs='cdn')
-        
     except Exception as e:
-        logger.error(f"Prophet 預測失敗: {str(e)}", exc_info=True)
-        return "<div class='alert alert-danger'>預測系統錯誤</div>"
+        print(f"Error creating Prophet forecast: {str(e)}")
+        return "<div class='error'>預測生成失敗</div>"
 
 def generate_static_files():
     """主生成函數"""

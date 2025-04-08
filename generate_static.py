@@ -135,13 +135,25 @@ def create_prophet_forecast(ticker_symbol, periods=30):
         forecast = model.predict(future)
         
         # 繪製圖表
-        fig = plot_plotly(model, forecast)
+        # 更新圖表佈局
         fig.update_layout(
-            title=f'未來 {periods} 天預測',
-            height=500,
-            template='plotly_white'
+            title=f'{ticker_symbol} {period}股價走勢',
+            xaxis_title='日期',
+            yaxis_title='價格 (TWD)',
+            hovermode='x unified',
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            ),
+            template='plotly_white',
+            margin=dict(l=50, r=50, b=50, t=50, pad=4),
+            height=400
         )
         
+        # 將圖表轉為HTML      
         return fig.to_html(full_html=False, include_plotlyjs='cdn')
         
     except Exception as e:
@@ -149,7 +161,7 @@ def create_prophet_forecast(ticker_symbol, periods=30):
         return "<div class='alert alert-danger'>預測系統錯誤</div>"
 
 def generate_static_files():
-    """主生成函數，完全重寫確保穩定性"""
+    """主生成函數"""
     ticker = "2330.TW"
     logger.info(f"開始生成 {ticker} 數據")
     

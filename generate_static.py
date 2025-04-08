@@ -105,85 +105,45 @@ def create_interactive_plot(ticker_symbol, period):
         return "<div class='alert alert-danger'>圖表生成錯誤</div>"
 
 def create_prophet_forecast(ticker_symbol, periods=30):
-    """Prophet預測模型，自定義置信區間顏色"""
+    """Prophet 預測模型"""
     try:
         hist = fetch_stock_data(ticker_symbol, "1y")
-        if hist is None or len(hist) < 30:
+        
+        if hist.empty or len(hist) < 30:
+            logger.warning("歷史數據不足於30天，無法預測")
             return "<div class='alert alert-warning'>需至少30天數據進行預測</div>"
 
-        # 準備數據和模型訓練 (保持不變)
+        # 準備數據
         df = hist.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
         df['ds'] = df['ds'].dt.tz_localize(None)
         
+        # 訓練模型
         model = Prophet(
             daily_seasonality=False,
             weekly_seasonality=True,
             yearly_seasonality=True,
-            changepoint_prior_scale=0.05,
+            interval_width=0.95, # 信賴區間
+            changepoint_prior_scale=0.05, # 控制模型對 趨勢變更點（changepoints）的靈敏度，即模型對歷史數據中趨勢變化的適應程度；越大(0.5)可能overfit，越小(0.01)可能underfit
             seasonality_mode='multiplicative'
         )
+        
+        # 添加台灣假期
         model.add_country_holidays(country_name='TW')
         model.fit(df)
         
+        # 生成預測
         future = model.make_future_dataframe(periods=periods)
         forecast = model.predict(future)
-
-        # 繪製基礎圖表
+        
+        # 繪製圖表
         fig = plot_plotly(model, forecast)
-        
-        # 自定義置信區間顏色
-        fig.update_traces(
-            selector=dict(name='Uncertainty'),  # 選取置信區間
-            fillcolor='rgba(255, 0, 0, 0.1)',   # 整體淡紅色
-            line=dict(width=0)                  # 隱藏邊框
-        )
-        
-        # 添加下半部綠色區間 (需手動計算)
-        fig.add_trace(
-            go.Scatter(
-                x=forecast['ds'].tolist() + forecast['ds'].tolist()[::-1],
-                y=forecast['yhat_lower'].tolist() + forecast['yhat_upper'].tolist()[::-1],
-                fill='toself',
-                fillcolor='rgba(0, 255, 0, 0.1)', # yhat_upper：使用淡紅色 rgba(255, 0, 0, 0.1)
-                line=dict(color='rgba(0,0,0,0)'), # yhat_lower：使用淡綠色 rgba(0, 255, 0, 0.1)
-                name='Lower Uncertainty',
-                showlegend=False
-            )
-        )
-        
-        # 調整預測線顏色
-        fig.update_traces(
-            selector=dict(name='Prediction'),
-            line=dict(color='blue', width=2) # 預測值: 藍色
-        )
-        
-        # 調整實際值顏色
-        fig.update_traces(
-            selector=dict(name='Actual'),
-            line=dict(color='black', width=1.5) #實際值: 黑色
-        )
-        
-        # 更新佈局
         fig.update_layout(
-            title=f'{ticker_symbol} 未來{periods}天預測',
-            xaxis_title='日期',
-            yaxis_title='價格 (TWD)',
-            hovermode='x unified',
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
-            ),
-            template='plotly_white',
-            height=500
+            title=f'未來 {periods} 天預測',
+            height=500,
+            template='plotly_white'
         )
         
         return fig.to_html(full_html=False, include_plotlyjs='cdn')
-    except Exception as e:
-        logging.error(f"預測失敗: {str(e)}")
-        return "<div class='alert alert-danger'>預測生成錯誤</div>"
 
 def generate_static_files():
     """主生成函數"""

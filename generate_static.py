@@ -123,7 +123,7 @@ def create_prophet_forecast(ticker_symbol, periods=30):
             weekly_seasonality=True,
             yearly_seasonality=True,
             interval_width=0.95, # 信賴區間
-            changepoint_prior_scale=0.05, # 控制模型對 趨勢變更點（changepoints）的靈敏度，即模型對歷史數據中趨勢變化的適應程度；越大(0.5)可能overfit，越小(0.01)可能underfit
+            changepoint_prior_scale=0.05, # 控制擬合能力，太高(0.5)易overfit、太低(0.01)易underfit
             seasonality_mode='multiplicative'
         )
         
@@ -144,6 +144,10 @@ def create_prophet_forecast(ticker_symbol, periods=30):
         )
         
         return fig.to_html(full_html=False, include_plotlyjs='cdn')
+        
+    except Exception as e:
+        logger.error(f"Prophet 預測失敗: {str(e)}", exc_info=True)
+        return "<div class='alert alert-danger'>預測系統錯誤</div>"
 
 def generate_static_files():
     """主生成函數"""

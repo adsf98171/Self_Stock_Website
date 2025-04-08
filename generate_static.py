@@ -105,19 +105,16 @@ def create_interactive_plot(ticker_symbol, period):
         return "<div class='alert alert-danger'>圖表生成錯誤</div>"
 
 def create_prophet_forecast(ticker_symbol, periods=30):
-    """Prophet 預測模型，完全重寫"""
+    """Prophet預測模型，自定義置信區間顏色"""
     try:
         hist = fetch_stock_data(ticker_symbol, "1y")
-        
-        if hist.empty or len(hist) < 30:
-            logger.warning("歷史數據不足於30天，無法預測")
+        if hist is None or len(hist) < 30:
             return "<div class='alert alert-warning'>需至少30天數據進行預測</div>"
 
-        # 準備數據
+        # 準備數據和模型訓練 (保持不變)
         df = hist.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
         df['ds'] = df['ds'].dt.tz_localize(None)
         
-        # 訓練模型
         model = Prophet(
             daily_seasonality=False,
             weekly_seasonality=True,
@@ -125,19 +122,50 @@ def create_prophet_forecast(ticker_symbol, periods=30):
             changepoint_prior_scale=0.05,
             seasonality_mode='multiplicative'
         )
-        
-        # 添加台灣假期
         model.add_country_holidays(country_name='TW')
         model.fit(df)
         
-        # 生成預測
         future = model.make_future_dataframe(periods=periods)
         forecast = model.predict(future)
+
+        # 繪製基礎圖表
+        fig = plot_plotly(model, forecast)
         
-        # 繪製圖表
-        # 更新圖表佈局
+        # 自定義置信區間顏色
+        fig.update_traces(
+            selector=dict(name='Uncertainty'),  # 選取置信區間
+            fillcolor='rgba(255, 0, 0, 0.1)',   # 整體淡紅色
+            line=dict(width=0)                  # 隱藏邊框
+        )
+        
+        # 添加下半部綠色區間 (需手動計算)
+        fig.add_trace(
+            go.Scatter(
+                x=forecast['ds'].tolist() + forecast['ds'].tolist()[::-1],
+                y=forecast['yhat_lower'].tolist() + forecast['yhat_upper'].tolist()[::-1],
+                fill='toself',
+                fillcolor='rgba(0, 255, 0, 0.1)', # yhat_upper：使用淡紅色 rgba(255, 0, 0, 0.1)
+                line=dict(color='rgba(0,0,0,0)'), # yhat_lower：使用淡綠色 rgba(0, 255, 0, 0.1)
+                name='Lower Uncertainty',
+                showlegend=False
+            )
+        )
+        
+        # 調整預測線顏色
+        fig.update_traces(
+            selector=dict(name='Prediction'),
+            line=dict(color='blue', width=2) # 預測值: 藍色
+        )
+        
+        # 調整實際值顏色
+        fig.update_traces(
+            selector=dict(name='Actual'),
+            line=dict(color='black', width=1.5) #實際值: 黑色
+        )
+        
+        # 更新佈局
         fig.update_layout(
-            title=f'{ticker_symbol} {period}股價走勢',
+            title=f'{ticker_symbol} 未來{periods}天預測',
             xaxis_title='日期',
             yaxis_title='價格 (TWD)',
             hovermode='x unified',
@@ -149,16 +177,13 @@ def create_prophet_forecast(ticker_symbol, periods=30):
                 x=1
             ),
             template='plotly_white',
-            margin=dict(l=50, r=50, b=50, t=50, pad=4),
-            height=400
+            height=500
         )
         
-        # 將圖表轉為HTML      
         return fig.to_html(full_html=False, include_plotlyjs='cdn')
-        
     except Exception as e:
-        logger.error(f"Prophet 預測失敗: {str(e)}", exc_info=True)
-        return "<div class='alert alert-danger'>預測系統錯誤</div>"
+        logging.error(f"預測失敗: {str(e)}")
+        return "<div class='alert alert-danger'>預測生成錯誤</div>"
 
 def generate_static_files():
     """主生成函數"""

@@ -208,7 +208,7 @@ def generate_static_files():
     env.filters['datetimeformat'] = datetimeformat
     
     try:
-        template = env.get_template('generate_static.html.html')
+        template = env.get_template('generate_static.html')
         html_content = template.render(
             current_price=current_price,
             day_high=day_high,

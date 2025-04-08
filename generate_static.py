@@ -204,11 +204,11 @@ def generate_static_files():
         logger.error(f"獲取新聞失敗: {str(e)}")
 
     # 5. 渲染模板
-    env = Environment(loader=FileSystemLoader('.'))
+    env = Environment(loader=FileSystemLoader('templates/'))
     env.filters['datetimeformat'] = datetimeformat
     
     try:
-        template = env.get_template('index.html')
+        template = env.get_template('generate_static.html.html')
         html_content = template.render(
             current_price=current_price,
             day_high=day_high,

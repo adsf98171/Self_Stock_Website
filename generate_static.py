@@ -120,11 +120,15 @@ def create_prophet_forecast(ticker_symbol, periods=30):
         # 創建並訓練模型
         model = Prophet(
             daily_seasonality=False,
-            weekly_seasonality=True,
+            weekly_seasonality=False,
             yearly_seasonality=True,
             interval_width=0.95,
-            changepoint_prior_scale=0.05,
-            seasonality_mode='multiplicative'
+            changepoint_prior_scale=0.01, # 降低以避免過擬合初期噪聲
+            seasonality_prior_scale=0.1,
+            seasonality_mode='multiplicative',
+            holidays=tw_holidays,
+            holidays_prior_scale=0.5       # 加強事件影響權重
+            # mcmc_samples=300
         )
         model.add_country_holidays(country_name='TW')
         model.fit(df)

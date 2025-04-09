@@ -130,11 +130,11 @@ def create_prophet_forecast(ticker_symbol, periods=30):
             holidays_prior_scale=0.5       # 加強事件影響權重
             # mcmc_samples=300
         )
-        model.add_country_holidays(country_name='TW')
+        #model.add_country_holidays(country_name='TW')
         model.fit(df)
         
-        # 建立未來預測
-        future = model.make_future_dataframe(periods=periods)
+        # 使用真實 test 日期做預測，避免週末等非交易日問題
+        future = test_df[["ds"]].copy()
         forecast = model.predict(future)
         
         # 使用Plotly繪製預測結果

@@ -114,8 +114,62 @@ def create_prophet_forecast(ticker_symbol, periods=30):
             raise ValueError("No data available for forecasting")
         
         # 準備Prophet數據 - 移除時區信息
-        df = hist.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
-        df['ds'] = df['ds'].dt.tz_localize(None)
+        #df = hist.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
+        #df['ds'] = df['ds'].dt.tz_localize(None)
+        data = data.reset_index()
+        df = data[["Date", "Close"]].rename(columns={"Date": "ds", "Close": "y"})
+        df.columns = df.columns.droplevel(1)  # 移除多層索引
+
+        tw_holidays = pd.DataFrame({
+            'holiday': 'tw_market_closed',
+            'ds': pd.to_datetime([
+                '2024-01-01',  # 元旦
+                '2024-01-25',  # 農曆新年 (除夕)
+                '2024-01-26',  # 農曆新年 (初一)
+                '2024-01-27',  # 農曆新年 (初二)
+                '2024-01-28',  # 農曆新年 (初三)
+                '2024-01-29',  # 農曆新年 (初四)
+                '2024-02-10',  # 農曆新年 (初六)
+                '2024-02-11',  # 農曆新年 (初七)
+                '2024-04-04',  # 兒童節
+                '2024-04-05',  # 清明節
+                '2024-05-01',  # 勞動節
+                '2024-06-06',  # 端午節
+                '2024-09-17',  # 中秋節
+                '2024-10-10',  # 國慶日
+                '2025-01-01',  # 元旦
+                '2025-01-29',  # 農曆新年 (除夕)
+                '2025-01-30',  # 農曆新年 (初一)
+                '2025-01-31',  # 農曆新年 (初二)
+                '2025-02-01',  # 農曆新年 (初三)
+                '2025-02-02',  # 農曆新年 (初四)
+                '2025-02-03',  # 農曆新年 (初五)
+                '2025-04-04',  # 兒童節
+                '2025-04-05',  # 清明節
+                '2025-05-01',  # 勞動節
+                '2025-06-07',  # 端午節
+                '2025-09-07',  # 中秋節
+                '2025-10-10',  # 國慶日
+            ]),
+            'lower_window': 0, #影響假期的前n天?
+            'upper_window': 0, #影響假期的後n天?
+        })
+
+        window_size = 200 # train data的長度(天)
+        horizon = 10 # 滑動的間隔(天)
+        step = 10 # 預測的時間範圍(天)
+
+        mae_list = []
+        start_dates = []
+
+        for start in range(0, len(df) - window_size, step):
+            train_df = df.iloc[start:start + window_size]
+            test_df = df.iloc[start + window_size:start + window_size + horizon]
+
+            # 如果測試集不足 horizon 天，就跳過
+            if len(test_df) < horizon:
+                print(f"Skipping window starting at {train_df['ds'].iloc[0].date()} (not enough test data)")
+                continue
         
         # 創建並訓練模型
         model = Prophet(

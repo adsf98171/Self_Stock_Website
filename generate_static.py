@@ -9,7 +9,6 @@ import logging
 import json
 import sys
 from jinja2 import Environment, FileSystemLoader
-import time  # 新增導入time模組用於重試間隔
 
 # 配置日誌記錄
 logging.basicConfig(
@@ -142,6 +141,7 @@ def create_prophet_forecast(ticker_symbol, periods=30):
             seasonality_mode='multiplicative',
             holidays=tw_holidays,
             holidays_prior_scale=0.5       # 加強事件影響權重
+            # mcmc_samples=300
         )
         model.fit(df)
         
@@ -181,56 +181,15 @@ def create_prophet_forecast(ticker_symbol, periods=30):
         print(f"Error creating Prophet forecast: {str(e)}")
         return "<div class='error'>預測生成失敗</div>"
 
-# 在程式開頭定義允許查詢的股票
-ALLOWED_STOCKS = {
-    '2330.TW': '台積電',
-    '2409.TW': '友達',
-    '2317.TW': '鴻海',
-    # 可以繼續添加其他允許的股票
-    '2303.TW': '聯電',
-    '1301.TW': '台塑',
-    '1303.TW': '南亞'
-}
-
-def get_user_input():
-    """獲取用戶輸入的股票代號（限制在允許列表內）"""
-    print("\n股票數據查詢系統")
-    print("=================")
-    print("可查詢股票列表:")
-    for code, name in ALLOWED_STOCKS.items():
-        print(f"{code}: {name}")
-    print("\n請輸入股票代號 (例如: 2330.TW)")
-    print("輸入 'exit' 或按 Ctrl+C 退出\n")
-    
-    while True:
-        try:
-            ticker = input("股票代號: ").strip().upper()
-            if ticker.lower() == 'exit':
-                return None
-            if ticker not in ALLOWED_STOCKS:
-                print("錯誤: 不在允許查詢的股票列表中!")
-                print("請輸入以下其中一項:", ", ".join(ALLOWED_STOCKS.keys()))
-                continue
-            return ticker
-        except KeyboardInterrupt:
-            print("\n程式結束")
-            return None
-        except Exception as e:
-            print(f"輸入錯誤: {str(e)}")
-            continue
-
-def generate_stock_report(ticker):
-    """生成指定股票的報告"""
-    if ticker not in ALLOWED_STOCKS:
-        logger.error(f"嘗試查詢未允許的股票: {ticker}")
-        return False
-    
-    logger.info(f"開始生成 {ALLOWED_STOCKS[ticker]}({ticker}) 數據")
+def generate_static_files():
+    """主生成函數"""
+    ticker = "2330.TW"
+    logger.info(f"開始生成 {ticker} 數據")
     
     # 1. 獲取基本資訊
     try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
+        tsmc = yf.Ticker(ticker)
+        info = tsmc.info
         current_price = info.get('currentPrice', 'N/A')
         day_high = info.get('dayHigh', 'N/A')
         day_low = info.get('dayLow', 'N/A')
@@ -265,8 +224,8 @@ def generate_stock_report(ticker):
     # 4. 獲取新聞
     news = []
     try:
-        if hasattr(stock, 'news'):
-            news_items = stock.news[:5]
+        if hasattr(tsmc, 'news'):
+            news_items = tsmc.news[:5]
             news = [{
                 'title': item.get('title', '無標題'),
                 'link': item.get('link', '#'),
@@ -283,11 +242,7 @@ def generate_stock_report(ticker):
     
     try:
         template = env.get_template('generate_static.html')
-         # 在渲染模板時傳入 ALLOWED_STOCKS
         html_content = template.render(
-            ticker_symbol=ticker,
-            stock_name=ALLOWED_STOCKS[ticker],
-            ALLOWED_STOCKS=ALLOWED_STOCKS,  # 傳入模板以便顯示
             current_price=current_price,
             day_high=day_high,
             day_low=day_low,
@@ -304,46 +259,25 @@ def generate_stock_report(ticker):
 
     # 6. 寫入文件
     try:
-        output_filename = f"{ticker.replace('.', '_')}_report.html"
-        with open(output_filename, 'w', encoding='utf-8') as f:
+        with open('index.html', 'w', encoding='utf-8') as f:
             f.write(html_content)
         
-        with open(f"{ticker.replace('.', '_')}_data.json", 'w', encoding='utf-8') as f:
+        with open('data.json', 'w', encoding='utf-8') as f:
             json.dump({
-                'ticker': ticker,
                 'current_price': current_price,
                 'history': history_list,
                 'news': news,
                 'last_updated': datetimeformat(datetime.datetime.now())
             }, f, ensure_ascii=False, indent=2)
         
-        logger.info(f"文件寫入完成: {output_filename}")
-        print(f"\n報告已生成: {output_filename}")
+        logger.info("文件寫入完成")
     except Exception as e:
         logger.error(f"文件寫入失敗: {str(e)}")
-        raise
-
-def main():
-    """主程式入口"""
-    while True:
-        ticker = get_user_input()
-        if not ticker:
-            break
-        
-        try:
-            generate_stock_report(ticker)
-        except Exception as e:
-            print(f"生成報告時發生錯誤: {str(e)}")
-            logger.critical(f"生成 {ticker} 報告失敗: {str(e)}", exc_info=True)
-        
-        print("\n是否要查詢另一支股票? (y/n)")
-        choice = input().strip().lower()
-        if choice != 'y':
-            break
+        raise  # 重新拋出異常讓 GitHub Actions 捕獲
 
 if __name__ == '__main__':
     try:
-        main()
+        generate_static_files()
     except Exception as e:
         logger.critical(f"程式執行失敗: {str(e)}", exc_info=True)
         sys.exit(1)

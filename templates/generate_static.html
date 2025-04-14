@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台積電 (2330.TW) 股價分析</title>
+    <title>{{ ticker_symbol }} 股價分析</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome 圖標 -->
@@ -56,17 +56,39 @@
         .table-hover tbody tr:hover {
             background-color: rgba(13, 110, 253, 0.1);
         }
+        .stock-search {
+            margin-bottom: 20px;
+        }
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+        .search-input {
+            flex-grow: 1;
+        }
     </style>
 </head>
 <body>
     <div class="container py-4">
+        <!-- 股票搜尋表單 -->
+        <div class="row stock-search">
+            <div class="col-12">
+                <form class="search-form" action="/" method="get">
+                    <input type="text" class="form-control search-input" name="ticker" placeholder="輸入股票代號 (例如: 2330.TW 或 AAPL)" value="{{ ticker_symbol }}" required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> 查詢
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <!-- 頁面標題 -->
         <div class="row mb-4">
             <div class="col-12 text-center">
                 <h1 class="display-4 fw-bold">
-                    <i class="fas fa-chart-line"></i> 台積電 (2330.TW)
+                    <i class="fas fa-chart-line"></i> {{ ticker_symbol }}
                 </h1>
-                <p class="text-muted">股價與分析(自動於每日的台灣時間18:00更新)</p>
+                <p class="text-muted">股價與分析 (自動於每日的台灣時間18:00更新)</p>
             </div>
         </div>
 
@@ -76,11 +98,13 @@
                 <div class="card price-card">
                     <div class="card-body text-center">
                         <h5 class="card-title">當前股價</h5>
-                        <h2 class="card-text">{{ current_price }} TWD</h2>
-                        <div class="price-change {% if current_price > previous_close %}up{% else %}down{% endif %}">
+                        <h2 class="card-text">{{ current_price }} 
+                            {% if '.TW' in ticker_symbol %}TWD{% else %}USD{% endif %}
+                        </h2>
+                        <div class="price-change {% if current_price != 'N/A' and previous_close != 'N/A' and current_price > previous_close %}up{% elif current_price != 'N/A' and previous_close != 'N/A' %}down{% endif %}">
                             {% if current_price != 'N/A' and previous_close != 'N/A' %}
                                 {{ ((current_price - previous_close) / previous_close * 100)|round(2) }}%
-                                ({{ current_price - previous_close }})
+                                ({{ (current_price - previous_close)|round(2) }})
                             {% else %}
                                 N/A
                             {% endif %}
@@ -94,15 +118,21 @@
                         <div class="row">
                             <div class="col-4 text-center">
                                 <h6>今日最高</h6>
-                                <h4>{{ day_high }} TWD</h4>
+                                <h4>{{ day_high }} 
+                                    {% if '.TW' in ticker_symbol %}TWD{% else %}USD{% endif %}
+                                </h4>
                             </div>
                             <div class="col-4 text-center">
                                 <h6>今日最低</h6>
-                                <h4>{{ day_low }} TWD</h4>
+                                <h4>{{ day_low }} 
+                                    {% if '.TW' in ticker_symbol %}TWD{% else %}USD{% endif %}
+                                </h4>
                             </div>
                             <div class="col-4 text-center">
                                 <h6>昨日收盤</h6>
-                                <h4>{{ previous_close }} TWD</h4>
+                                <h4>{{ previous_close }} 
+                                    {% if '.TW' in ticker_symbol %}TWD{% else %}USD{% endif %}
+                                </h4>
                             </div>
                         </div>
                     </div>
@@ -133,10 +163,10 @@
                 </div>
             </div>
         </div>
-		<div class="row mb-4">
-		    <div class="col-md-6">
-			    <div class="card">
-				    <div class="card-header">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
                         <i class="fas fa-chart-bar"></i> 長期股價走勢(1個月)
                     </div>
                     <div class="card-body">
@@ -144,9 +174,7 @@
                     </div>
                 </div>
             </div>
-
-        <!--
-            <div class="col-md-6">-->
+            <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
                         <i class="fas fa-project-diagram"></i> 未來30天預測
@@ -156,7 +184,9 @@
                     </div>
                 </div>
             </div>
-			<div class="row mb-4">
+        </div>
+        
+        <div class="row mb-4">
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">

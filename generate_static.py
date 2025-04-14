@@ -221,7 +221,11 @@ def get_user_input():
 
 def generate_stock_report(ticker):
     """生成指定股票的報告"""
-    logger.info(f"開始生成 {ticker} 數據")
+    if ticker not in ALLOWED_STOCKS:
+        logger.error(f"嘗試查詢未允許的股票: {ticker}")
+        return False
+    
+    logger.info(f"開始生成 {ALLOWED_STOCKS[ticker]}({ticker}) 數據")
     
     # 1. 獲取基本資訊
     try:
@@ -279,8 +283,11 @@ def generate_stock_report(ticker):
     
     try:
         template = env.get_template('generate_static.html')
+         # 在渲染模板時傳入 ALLOWED_STOCKS
         html_content = template.render(
             ticker_symbol=ticker,
+            stock_name=ALLOWED_STOCKS[ticker],
+            ALLOWED_STOCKS=ALLOWED_STOCKS,  # 傳入模板以便顯示
             current_price=current_price,
             day_high=day_high,
             day_low=day_low,

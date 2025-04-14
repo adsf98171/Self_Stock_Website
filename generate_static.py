@@ -181,12 +181,25 @@ def create_prophet_forecast(ticker_symbol, periods=30):
         print(f"Error creating Prophet forecast: {str(e)}")
         return "<div class='error'>預測生成失敗</div>"
 
+# 在程式開頭定義允許查詢的股票
+ALLOWED_STOCKS = {
+    '2330.TW': '台積電',
+    '2409.TW': '友達',
+    '2317.TW': '鴻海',
+    # 可以繼續添加其他允許的股票
+    '2303.TW': '聯電',
+    '1301.TW': '台塑',
+    '1303.TW': '南亞'
+}
+
 def get_user_input():
-    """獲取用戶輸入的股票代號"""
+    """獲取用戶輸入的股票代號（限制在允許列表內）"""
     print("\n股票數據查詢系統")
     print("=================")
-    print("請輸入股票代號 (例如: 2330.TW 或 AAPL):")
-    print("注意: 台灣股票請在代號後加.TW (例如: 2330.TW)")
+    print("可查詢股票列表:")
+    for code, name in ALLOWED_STOCKS.items():
+        print(f"{code}: {name}")
+    print("\n請輸入股票代號 (例如: 2330.TW)")
     print("輸入 'exit' 或按 Ctrl+C 退出\n")
     
     while True:
@@ -194,8 +207,9 @@ def get_user_input():
             ticker = input("股票代號: ").strip().upper()
             if ticker.lower() == 'exit':
                 return None
-            if not ticker:
-                print("請輸入有效的股票代號!")
+            if ticker not in ALLOWED_STOCKS:
+                print("錯誤: 不在允許查詢的股票列表中!")
+                print("請輸入以下其中一項:", ", ".join(ALLOWED_STOCKS.keys()))
                 continue
             return ticker
         except KeyboardInterrupt:

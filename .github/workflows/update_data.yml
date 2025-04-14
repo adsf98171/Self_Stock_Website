@@ -8,9 +8,6 @@ on:
 jobs:
   update-data:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        ticker: ['2330.TW', '2409.TW', '2317.TW']  # 只生成允許的股票報告
     
     steps:
     - uses: actions/checkout@v3

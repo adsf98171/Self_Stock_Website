@@ -1,5 +1,5 @@
 {
-  "current_price": "N/A",
+  "current_price": 2290.0,
   "history": [
     {
       "date": "2026-07-13 08:00:00",
@@ -69,5 +69,5 @@
       "publishedAt": "1970-01-01 08:00:00"
     }
   ],
-  "last_updated": "2026-07-17 19:18:55"
+  "last_updated": "2026-07-18 18:59:19"
 }

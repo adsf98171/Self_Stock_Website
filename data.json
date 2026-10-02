@@ -1,13 +1,6 @@
 {
-  "current_price": 2510.0,
+  "current_price": 2500.0,
   "history": [
-    {
-      "date": "2026-09-23 08:00:00",
-      "open": 2475.0,
-      "high": 2505.0,
-      "low": 2475.0,
-      "close": 2500.0
-    },
     {
       "date": "2026-09-24 08:00:00",
       "open": 2480.0,
@@ -31,43 +24,19 @@
     },
     {
       "date": "2026-10-01 08:00:00",
+      "open": 2490.0,
+      "high": 2510.0,
+      "low": 2485.0,
+      "close": 2510.0
+    },
+    {
+      "date": "2026-10-02 08:00:00",
       "open": NaN,
       "high": NaN,
       "low": NaN,
       "close": NaN
     }
   ],
-  "news": [
-    {
-      "title": "無標題",
-      "link": "#",
-      "publisher": "未知來源",
-      "publishedAt": "1970-01-01 08:00:00"
-    },
-    {
-      "title": "無標題",
-      "link": "#",
-      "publisher": "未知來源",
-      "publishedAt": "1970-01-01 08:00:00"
-    },
-    {
-      "title": "無標題",
-      "link": "#",
-      "publisher": "未知來源",
-      "publishedAt": "1970-01-01 08:00:00"
-    },
-    {
-      "title": "無標題",
-      "link": "#",
-      "publisher": "未知來源",
-      "publishedAt": "1970-01-01 08:00:00"
-    },
-    {
-      "title": "無標題",
-      "link": "#",
-      "publisher": "未知來源",
-      "publishedAt": "1970-01-01 08:00:00"
-    }
-  ],
-  "last_updated": "2026-10-02 00:51:36"
+  "news": [],
+  "last_updated": "2026-10-03 00:04:19"
 }

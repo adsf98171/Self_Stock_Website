@@ -31,12 +31,12 @@
     },
     {
       "date": "2026-10-08 08:00:00",
-      "open": NaN,
-      "high": NaN,
-      "low": NaN,
-      "close": NaN
+      "open": 2550.0,
+      "high": 2575.0,
+      "low": 2550.0,
+      "close": 2550.0
     }
   ],
   "news": [],
-  "last_updated": "2026-10-09 01:09:57"
+  "last_updated": "2026-10-10 00:47:08"
 }
